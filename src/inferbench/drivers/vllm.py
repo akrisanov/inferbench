@@ -1,7 +1,11 @@
 from inferbench.models import Experiment
+from inferbench.process import ProcessResult, ProcessRunner, run_process
 
 
 class VllmBenchDriver:
+    def __init__(self, process_runner: ProcessRunner = run_process) -> None:
+        self.process_runner = process_runner
+
     def build_command(self, experiment: Experiment) -> list[str]:
         target = experiment.target
         workload = experiment.workload
@@ -30,3 +34,7 @@ class VllmBenchDriver:
             str(workload.seed),
             "--ignore-eos",
         ]
+
+    def run(self, experiment: Experiment) -> ProcessResult:
+        command = self.build_command(experiment)
+        return self.process_runner(command)
