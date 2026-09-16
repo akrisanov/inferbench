@@ -6,7 +6,10 @@ readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
 authors = [{ name = "Andrey Krisanov" }]
-dependencies = ["pydantic>=2.13.5", "pyyaml>=6.0.3"]
+dependencies = ["pydantic>=2.13.5", "pyyaml>=6.0.3", "typer>=0.27.2"]
+
+[project.scripts]
+inferbench = "inferbench.cli:app"
 
 [build-system]
 requires = ["uv_build>=0.9.5,<0.10.0"]
