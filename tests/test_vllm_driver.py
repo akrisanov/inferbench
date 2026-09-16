@@ -1,10 +1,12 @@
+from pathlib import Path
+
 from inferbench.drivers.vllm import VllmBenchDriver
 from inferbench.models import Experiment, Target, Workload
 from inferbench.process import ProcessResult
 
 
-def test_build_command() -> None:
-    experiment = Experiment(
+def create_experiment() -> Experiment:
+    return Experiment(
         name="basic-vllm",
         target=Target(
             base_url="http://localhost:8000",
@@ -19,9 +21,13 @@ def test_build_command() -> None:
         ),
     )
 
+
+def test_build_command() -> None:
+    experiment = create_experiment()
+    result_path = Path("results/benchmark.json")
     driver = VllmBenchDriver()
 
-    command = driver.build_command(experiment)
+    command = driver.build_command(experiment, result_path)
 
     assert command == [
         "vllm",
@@ -46,28 +52,22 @@ def test_build_command() -> None:
         "--seed",
         "42",
         "--ignore-eos",
+        "--save-result",
+        "--result-dir",
+        "results",
+        "--result-filename",
+        "benchmark.json",
     ]
 
 
 def test_run_executes_benchmark_command() -> None:
-    experiment = Experiment(
-        name="basic-vllm",
-        target=Target(
-            base_url="http://localhost:8000",
-            model="test-model",
-        ),
-        workload=Workload(
-            input_tokens=2048,
-            output_tokens=256,
-            request_rate=1,
-            requests=100,
-        ),
-    )
-
+    experiment = create_experiment()
+    result_path = Path("results/benchmark.json")
     executed_command: list[str] = []
 
     def process_runner(command: list[str]) -> ProcessResult:
         executed_command.extend(command)
+
         return ProcessResult(
             returncode=0,
             stdout="benchmark completed",
@@ -76,9 +76,9 @@ def test_run_executes_benchmark_command() -> None:
 
     driver = VllmBenchDriver(process_runner=process_runner)
 
-    result = driver.run(experiment)
+    result = driver.run(experiment, result_path)
 
-    assert executed_command == driver.build_command(experiment)
+    assert executed_command == driver.build_command(experiment, result_path)
     assert result.returncode == 0
     assert result.stdout == "benchmark completed"
     assert result.stderr == ""

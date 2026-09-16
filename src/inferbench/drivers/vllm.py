@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from inferbench.models import Experiment
 from inferbench.process import ProcessResult, ProcessRunner, run_process
 
@@ -6,7 +8,11 @@ class VllmBenchDriver:
     def __init__(self, process_runner: ProcessRunner = run_process) -> None:
         self.process_runner = process_runner
 
-    def build_command(self, experiment: Experiment) -> list[str]:
+    def build_command(
+        self,
+        experiment: Experiment,
+        result_path: Path,
+    ) -> list[str]:
         target = experiment.target
         workload = experiment.workload
 
@@ -33,8 +39,17 @@ class VllmBenchDriver:
             "--seed",
             str(workload.seed),
             "--ignore-eos",
+            "--save-result",
+            "--result-dir",
+            str(result_path.parent),
+            "--result-filename",
+            result_path.name,
         ]
 
-    def run(self, experiment: Experiment) -> ProcessResult:
-        command = self.build_command(experiment)
+    def run(
+        self,
+        experiment: Experiment,
+        result_path: Path,
+    ) -> ProcessResult:
+        command = self.build_command(experiment, result_path)
         return self.process_runner(command)
