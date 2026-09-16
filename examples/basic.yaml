@@ -1,0 +1,12 @@
+name: basic-vllm
+
+target:
+  base_url: http://localhost:8000
+  model: meta-llama/Llama-3.1-8B-Instruct
+
+workload:
+  input_tokens: 2048
+  output_tokens: 256
+  request_rate: 1
+  requests: 100
+  seed: 42
