@@ -1,8 +1,11 @@
 from pathlib import Path
+from typing import Annotated
 
 import typer
 
 from inferbench.config import load_experiment
+from inferbench.drivers.vllm import VllmBenchDriver
+from inferbench.runner import BenchmarkExecutionError, BenchmarkResultError, ExperimentRunner
 
 app = typer.Typer()
 
@@ -13,8 +16,28 @@ def main() -> None:
 
 
 @app.command()
-def run(path: Path) -> None:
-    """Load and validate an experiment configuration."""
+def run(
+    path: Path,
+    output_dir: Annotated[
+        Path,
+        typer.Option(
+            "--output-dir",
+            "-o",
+            help="Directory for experiment artifacts.",
+        ),
+    ] = Path("results"),
+) -> None:
+    """Run an experiment."""
     experiment = load_experiment(path)
 
-    typer.echo(experiment.model_dump_json(indent=2))
+    run_dir = output_dir / experiment.name
+    runner = ExperimentRunner(VllmBenchDriver())
+
+    try:
+        artifact = runner.run(experiment, run_dir)
+    except (BenchmarkExecutionError, BenchmarkResultError) as error:
+        typer.echo(f"Error: {error}", err=True)
+        raise typer.Exit(code=1) from error
+
+    typer.echo(f"Experiment completed: {artifact.experiment.name}")
+    typer.echo(f"Artifacts: {run_dir}")

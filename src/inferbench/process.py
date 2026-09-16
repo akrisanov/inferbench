@@ -13,13 +13,20 @@ class ProcessResult:
 ProcessRunner = Callable[[list[str]], ProcessResult]
 
 
+class ProcessExecutionError(RuntimeError):
+    pass
+
+
 def run_process(command: list[str]) -> ProcessResult:
-    completed = subprocess.run(
-        command,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    try:
+        completed = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except OSError as error:
+        raise ProcessExecutionError(f"Failed to execute {command[0]!r}: {error}") from error
 
     return ProcessResult(
         returncode=completed.returncode,

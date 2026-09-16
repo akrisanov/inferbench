@@ -4,6 +4,7 @@ from pathlib import Path
 from inferbench.artifacts import ExperimentArtifact, RunMetadata, write_artifact
 from inferbench.drivers.vllm import VllmBenchDriver
 from inferbench.models import Experiment
+from inferbench.process import ProcessExecutionError
 from inferbench.results import load_vllm_result
 
 
@@ -29,7 +30,10 @@ class ExperimentRunner:
         result_path = output_dir / "vllm-result.json"
         started_at = datetime.now(UTC)
 
-        process_result = self.driver.run(experiment, result_path)
+        try:
+            process_result = self.driver.run(experiment, result_path)
+        except ProcessExecutionError as error:
+            raise BenchmarkExecutionError(str(error)) from error
 
         if process_result.returncode != 0:
             raise BenchmarkExecutionError(
