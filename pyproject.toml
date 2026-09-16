@@ -1,0 +1,29 @@
+[project]
+name = "inferbench"
+version = "0.1.0"
+description = "A reproducible experiment harness for benchmarking and diagnosing LLM serving stacks."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Andrey Krisanov" }]
+
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "ruff",
+    "ty",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ty]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
