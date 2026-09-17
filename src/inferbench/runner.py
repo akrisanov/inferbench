@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from inferbench.artifacts import ExperimentArtifact, RunMetadata, write_artifact
-from inferbench.drivers.vllm import VllmBenchDriver
+from inferbench.drivers.base import BenchmarkDriver
 from inferbench.models import Experiment
 from inferbench.process import ProcessExecutionError
 from inferbench.results import load_vllm_result
@@ -17,7 +17,7 @@ class BenchmarkResultError(RuntimeError):
 
 
 class ExperimentRunner:
-    def __init__(self, driver: VllmBenchDriver) -> None:
+    def __init__(self, driver: BenchmarkDriver) -> None:
         self.driver = driver
 
     def run(

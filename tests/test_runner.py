@@ -59,6 +59,21 @@ def test_run_experiment(tmp_path: Path) -> None:
     assert (output_dir / "client.json").is_file()
 
 
+def test_run_experiment_with_structural_driver(tmp_path: Path) -> None:
+    fixture = Path(__file__).parent / "fixtures" / "vllm-result.json"
+
+    class FixtureDriver:
+        def run(self, experiment: Experiment, result_path: Path) -> ProcessResult:
+            shutil.copyfile(fixture, result_path)
+            return ProcessResult(returncode=0, stdout="benchmark completed", stderr="")
+
+    runner = ExperimentRunner(FixtureDriver())
+
+    artifact = runner.run(create_experiment(), tmp_path / "structural")
+
+    assert artifact.client.completed == 100
+
+
 def test_run_fails_when_benchmark_process_fails(tmp_path: Path) -> None:
     def process_runner(command: list[str]) -> ProcessResult:
         return ProcessResult(
